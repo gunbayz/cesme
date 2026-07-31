@@ -114,8 +114,11 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   padding:22px 0 10px;border-bottom:1px solid var(--line);list-style:none}
 
 /* ---- empty state: line illustration, vertically centered ---- */
-.empty{display:flex;align-items:center;justify-content:center;min-height:52vh}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;min-height:52vh}
 .empty[hidden]{display:none}
+.empty p{font-size:17px;font-weight:600;color:var(--muted)}
+.empty p[hidden]{display:none}
 
 /* ---- toast: flat, full content width ---- */
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));
@@ -237,7 +240,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 
   <div id="panel" role="tabpanel" aria-live="polite">
     <div class="add-row" id="addRow" role="button" tabindex="0" aria-label="Yeni madde ekle">
-      <span class="add-ph">＋ Yeni madde</span>
+      <span class="add-ph">＋ Ne lazım</span>
     </div>
     <ul class="tasks" id="list"></ul>
     <div class="empty" id="empty" hidden>
@@ -246,6 +249,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
         <path d="M10 58c6-6 12-6 18 0s12 6 18 0 12-6 18 0 12 6 18 0 12-6 18 0" opacity=".9"/>
         <path d="M10 70c6-6 12-6 18 0s12 6 18 0 12-6 18 0 12 6 18 0 12-6 18 0" opacity=".4"/>
       </svg>
+      <p id="emptyText" hidden></p>
     </div>
   </div>
 </div>
@@ -267,7 +271,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     </div>
     <div class="alert-actions">
       <button id="cancelClear">Vazgeç</button>
-      <button id="confirmClear">Sil</button>
+      <button id="confirmClear">Sil gitsin</button>
     </div>
   </div>
 </div>
@@ -276,9 +280,9 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Madde işlemleri">
   <div class="sheet-group">
     <div class="sheet-name" id="sheetName"></div>
-    <button id="actEdit">Düzenle</button>
+    <button id="actEdit">Düzelt</button>
     <button id="actMove"><span id="actMoveIcon"></span><span id="actMoveText"></span></button>
-    <button id="actDelete" class="danger">Sil</button>
+    <button id="actDelete" class="danger">Sil gitsin</button>
   </div>
   <div class="sheet-cancel"><button id="actCancel">Vazgeç</button></div>
 </div>
@@ -312,6 +316,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 
   var listEl = document.getElementById('list');
   var emptyEl = document.getElementById('empty');
+  var emptyText = document.getElementById('emptyText');
   var addRow = document.getElementById('addRow');
   var panel = document.getElementById('panel');
   var tabBuy = document.getElementById('tab-buy');
@@ -416,6 +421,12 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     var isEmpty = items.length === 0;
     listEl.hidden = isEmpty;
     emptyEl.hidden = !isEmpty;
+    if (state.tab === 'buy') {
+      emptyText.textContent = 'Her şey alınmış!';
+      emptyText.hidden = false;
+    } else {
+      emptyText.hidden = true;
+    }
   }
 
   function switchTab(tab, direction) {
@@ -546,8 +557,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   /* ---- inline add row ---- */
   function openAdd() {
     if (addRow.querySelector('input')) return;
-    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde" placeholder="' +
-      (state.tab === 'buy' ? 'Örn: Zeytinyağı' : 'Örn: İlaçlar') + '">';
+    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde">';
     var inp = addRow.querySelector('input');
     inp.focus();
     var commit = function () {
@@ -557,7 +567,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
         save();
         render();
       }
-      addRow.innerHTML = '<span class="add-ph">＋ Yeni madde</span>';
+      addRow.innerHTML = '<span class="add-ph">＋ Ne lazım</span>';
     };
     inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') inp.blur(); });
     inp.addEventListener('blur', commit);
