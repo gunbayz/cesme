@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Today</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Çeşme</title>
+<meta name="description" content="Alınacaklar ve götürülecekler listesi">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Today">
-<meta name="theme-color" content="#fafaf8">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" href="favicon.png">
+<meta name="apple-mobile-web-app-title" content="Çeşme">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,742 +25,378 @@
   --muted:#9a9cb0;
   --card:#f5f6f9;
   --line:#eef0f4;
-  --accent:#6d4df2;
+  --accent:#00838F;
+  --accent-dark:#006972;
+  --danger:#ff5c69;
   --sans:'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--bg);
-  overscroll-behavior:none;touch-action:manipulation;
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-/* body is fixed so iOS can never scroll the document when the keyboard opens.
-   100dvh (dynamic viewport height) covers the full screen incl. the
-   home-indicator area — same approach as the cookbook app. */
-body{position:fixed;top:0;left:0;width:100%;height:100vh;height:100dvh;
-  font-family:var(--sans);color:var(--ink)}
-input,textarea{-webkit-user-select:auto;user-select:auto}
+html,body{background:var(--bg)}
+body{
+  font-family:var(--sans);color:var(--ink);
+  min-height:100vh;min-height:100dvh;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+.app{max-width:560px;margin:0 auto;padding:12px 20px 120px}
 
-#pager{position:absolute;inset:0;display:flex;width:200vw;height:100%;
-  will-change:transform;z-index:1}
-.page{width:100vw;height:100%;overflow-y:auto;overflow-x:hidden;position:relative;
-  padding:calc(env(safe-area-inset-top) + 12px) 20px calc(env(safe-area-inset-bottom) + 110px) 20px;
-  touch-action:pan-y;overscroll-behavior:contain}
-
-/* top bar */
+/* ---- top bar: centered title, action at edge ---- */
 .topbar{position:relative;display:flex;align-items:center;justify-content:space-between;
-  gap:8px;min-height:56px;margin-bottom:12px}
+  min-height:56px;margin-bottom:8px}
 .topbar .titles{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
   text-align:center;pointer-events:none}
-.topbar .tb-btn{position:relative;z-index:1}
-.topbar h1{font-size:24px;font-weight:700;line-height:1.2}
-.topbar .date,.topbar .sub{font-size:14px;font-weight:500;color:var(--muted);margin-top:1px}
-.tb-btn{font-family:var(--sans);font-size:17px;font-weight:600;color:var(--accent);
-  background:transparent;border:none;padding:8px 6px;min-width:64px;cursor:pointer;line-height:1}
+.topbar h1{font-size:24px;font-weight:700;line-height:1.2;color:var(--ink)}
+.topbar .date{font-size:14px;font-weight:500;color:var(--muted);margin-top:1px}
+.tb-btn{position:relative;z-index:1;font-family:var(--sans);background:transparent;border:none;
+  color:var(--muted);min-width:48px;min-height:48px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:12px}
 .tb-btn:active{opacity:.6}
-.tb-spacer{min-width:64px}
+.tb-spacer{min-width:48px}
+button:focus-visible,input:focus-visible,.add-row:focus-visible{
+  outline:3px solid var(--accent);outline-offset:2px}
 
-/* add row (revealed by the + button) */
-.add-row{display:none;align-items:center;min-height:52px;
-  border-bottom:1px solid var(--line);
+/* ---- segmented tabs, flat ---- */
+.segments{display:flex;background:var(--card);border-radius:12px;padding:3px;gap:3px}
+.segment{flex:1;border:none;background:transparent;border-radius:9px;padding:12px 6px;
+  font-family:var(--sans);font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;min-height:52px;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease}
+.segment[aria-selected="true"]{background:var(--bg);color:var(--accent);
+  box-shadow:0 2px 8px rgba(28,29,49,.10)}
+.segment .count{background:var(--accent);color:#fff;font-size:13px;font-weight:700;
+  min-width:24px;height:24px;border-radius:12px;display:inline-flex;align-items:center;
+  justify-content:center;padding:0 7px}
+.segment[aria-selected="false"] .count{background:#b9bcd0}
+
+.hint{font-size:14px;font-weight:500;color:var(--muted);padding:12px 2px 4px;line-height:1.45}
+
+/* ---- inline add row ---- */
+.add-row{display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--line);
   color:var(--muted);font-size:18px;font-weight:500;cursor:text}
-.add-row.active{display:flex}
-#backlog .add-row{display:flex}  /* Later: the + New task row is always visible */
-
-/* floating buttons — iOS 26 liquid-glass style */
-.fab{position:absolute;right:20px;bottom:20px;
-  width:58px;height:58px;border-radius:50%;border:1px solid rgba(255,255,255,.7);
-  background:rgba(255,255,255,.55);
-  -webkit-backdrop-filter:blur(18px) saturate(1.8);
-  backdrop-filter:blur(18px) saturate(1.8);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:25;
-  box-shadow:0 8px 24px rgba(28,29,49,.18), inset 0 1px 1px rgba(255,255,255,.9)}
-.fab:active{transform:scale(.94)}
-.fab-left{right:auto;left:20px}
-.fab svg{width:26px;height:26px}
-.fab svg path{stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
-.fab svg circle{fill:var(--accent)}
 .add-row input{flex:1;border:none;outline:none;background:transparent;font-family:var(--sans);
-  font-size:18px;font-weight:500;color:var(--ink);padding:0}
+  font-size:18px;font-weight:500;color:var(--ink);padding:0;min-width:0}
 .add-row input::placeholder{color:var(--muted)}
 
-/* task rows */
+/* ---- task rows: flat, hairline separators ---- */
 ul.tasks{list-style:none}
-li.task{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
-  touch-action:pan-y}
-/* lifted rows get side padding via negative margins so the highlight
-   extends past the text while the text itself stays aligned */
-li.task.pressed{overflow:visible}
-li.task.pressed .t-actions{display:none}
-li.task.pressed .t-content,
-li.task.dragging .t-content{margin:0 -14px;padding:0 14px}
-li.task.pressed .t-content{background:var(--card);border-radius:12px}
-li.task.dragging{z-index:20;border-bottom-color:transparent}
-li.task.dragging .t-content{background:var(--bg);box-shadow:0 8px 22px rgba(28,29,49,.16);
-  border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-li.task.shifting .t-content{transition:transform .18s ease}
-/* while reordering, rows must be able to render outside their own slot
-   (otherwise shifted rows get clipped and look blank) */
-ul.tasks.reordering li.task{overflow:visible}
-ul.tasks.reordering .t-actions{display:none}
-/* action strip slides in OVER the row (circular icon buttons) */
-.t-actions{position:absolute;inset:0 0 0 auto;display:flex;align-items:center;gap:12px;
-  z-index:2;padding-left:14px;
-  transform:translateX(110%);transition:transform .22s cubic-bezier(.25,.8,.35,1);
-  will-change:transform}
-#page-today .t-actions{inset:0 auto 0 0;padding-left:0;padding-right:14px;
-  transform:translateX(-110%)}  /* today: strip on the left, revealed by right-swipe */
-li.task.dragging .t-actions{display:none}
-.t-actions button{width:46px;height:46px;border-radius:50%;border:none;padding:0;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
-  box-shadow:0 3px 10px rgba(28,29,49,.16)}
-.t-actions button svg{width:22px;height:22px}
-.t-actions button svg path{stroke:#fff;stroke-width:2;fill:none;
-  stroke-linecap:round;stroke-linejoin:round}
-.t-actions button svg circle{fill:#fff}
-.t-actions .a-backlog{background:var(--accent)}
-.t-actions .a-delete{background:#ff3b30}
-.t-content{position:relative;z-index:1;display:flex;align-items:center;gap:10px;
-  min-height:52px;background:var(--bg);
-  will-change:transform;transition:transform .22s cubic-bezier(.25,.8,.35,1)}
-.t-text{flex:1;font-size:18px;font-weight:500;line-height:1.35;padding:14px 0;
-  position:relative;min-width:0;overflow-wrap:anywhere}
-.t-text input,.t-text textarea{width:100%;border:none;outline:none;background:transparent;
-  font-family:var(--sans);font-size:18px;font-weight:500;line-height:1.35;color:var(--ink);
-  resize:none;padding:0;display:block;overflow:hidden}
-li.task.crossed .t-text{color:var(--muted)}
-/* strike only the text itself; wraps per line automatically */
-li.task.crossed .t-label{text-decoration:line-through;
+li.item{display:flex;align-items:center;gap:10px;min-height:56px;
+  border-bottom:1px solid var(--line);animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.check{flex-shrink:0;width:48px;height:48px;margin-left:-10px;border:none;background:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.check .ring{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9dbe6;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease,border-color .15s ease}
+li.item.checked .ring,li.item.leaving .ring{background:var(--accent);border-color:var(--accent)}
+.ring svg{opacity:0;transform:scale(.5);transition:opacity .15s ease,transform .15s ease}
+li.item.checked .ring svg,li.item.leaving .ring svg{opacity:1;transform:scale(1)}
+
+.label{flex:1;font-size:18px;font-weight:500;line-height:1.35;padding:14px 0;
+  min-width:0;overflow-wrap:anywhere}
+li.item.checked .label{color:var(--muted)}
+li.item.checked .label .t-label{text-decoration:line-through;
   text-decoration-thickness:1.5px;text-decoration-color:var(--muted)}
-li.task.crossed .t-move{visibility:hidden}
-.t-move{flex-shrink:0;border:none;background:transparent;padding:14px 0 14px 10px;cursor:pointer}
-.t-move svg{width:26px;height:18px;display:block}
-.t-move svg path{stroke:#b9bcd0;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.mirror{transform:scaleX(-1)}
-/* the mirror flip also flips the padding, so reverse it to keep the arrow flush right */
-.t-move.mirror{padding:14px 10px 14px 0}
+li.item.leaving{opacity:0;transform:translateX(30px);
+  transition:opacity .4s ease .25s,transform .4s ease .25s}
 
-/* ===== backlog sheet ===== */
-#bl-scrim{position:absolute;inset:0;background:rgba(28,29,49,.32);z-index:29;
-  opacity:0;pointer-events:none;transition:opacity .3s ease}
-#bl-scrim.show{opacity:1;pointer-events:auto}
-#backlog{position:absolute;left:0;right:0;bottom:0;
-  top:calc(env(safe-area-inset-top) + 18px);z-index:30;background:var(--bg);
-  border-radius:34px 34px 0 0;box-shadow:0 -12px 44px rgba(28,29,49,.22);
-  transform:translateY(104%);transition:transform .34s cubic-bezier(.32,.72,.28,1);
-  display:flex;flex-direction:column}
-#backlog.open{transform:translateY(0)}
-.bl-head{padding:10px 20px 4px;touch-action:none;cursor:grab}
-.bl-head .grabber{width:38px;height:5px;border-radius:3px;background:#d9dbe6;
-  margin:0 auto 12px}
-#backlog .bl-scroll{flex:1;overflow-y:auto;position:relative;
-  overscroll-behavior:contain;padding:0 20px 96px 20px}
-li.task .t-sel{flex-shrink:0;width:26px;height:26px;border:1.5px solid #d9dbe6;
-  border-radius:50%;margin-right:4px;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;background:#fff}
-li.task.selected .t-sel{background:var(--accent);border-color:var(--accent)}
-li.task .t-sel svg{width:14px;height:14px;opacity:0}
-li.task.selected .t-sel svg{opacity:1}
-li.task .t-sel svg path{stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
-li.task.temp .t-text{font-style:italic;color:#7b7d92}
-#bl-addbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;
-  padding:0 20px 20px;z-index:40;
-  transform:translateY(130%);transition:transform .25s ease;pointer-events:none}
-#bl-addbar.show{transform:translateY(0);pointer-events:auto}
-#bl-addbar button{font-family:var(--sans);font-size:18px;font-weight:600;
-  background:var(--accent);color:#fff;border:none;border-radius:999px;
-  height:58px;padding:0 30px;box-shadow:0 8px 24px rgba(109,77,242,.35);cursor:pointer}
+.delete{flex-shrink:0;width:48px;height:48px;margin-right:-10px;border:none;background:none;
+  color:#b9bcd0;cursor:pointer;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.delete:active{color:var(--danger)}
 
-/* helper */
-.hidden{display:none!important}
+.done-header{font-size:14px;font-weight:600;color:var(--muted);
+  padding:20px 0 8px;border-bottom:1px solid var(--line);list-style:none}
+
+/* ---- empty state ---- */
+.empty{text-align:center;padding:56px 24px;color:var(--muted)}
+.empty svg{margin-bottom:16px}
+.empty p{font-size:16px;font-weight:500;line-height:1.5;white-space:pre-line}
+
+/* ---- toast: accent pill ---- */
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));
+  transform:translate(-50%,20px);background:var(--accent);color:#fff;
+  font-size:15px;font-weight:600;padding:15px 24px;border-radius:999px;
+  box-shadow:0 8px 24px rgba(0,131,143,.35);opacity:0;pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease;
+  max-width:calc(100vw - 40px);text-align:center;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---- confirm dialog ---- */
+.overlay{position:fixed;inset:0;background:rgba(28,29,49,.32);display:none;
+  align-items:center;justify-content:center;padding:24px;z-index:100}
+.overlay.show{display:flex}
+.alert{background:var(--bg);border-radius:22px;max-width:320px;width:100%;overflow:hidden;
+  box-shadow:0 12px 44px rgba(28,29,49,.22);animation:pop .2s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.alert-body{padding:26px 22px 20px;text-align:center}
+.alert-body h2{font-size:19px;font-weight:700;margin-bottom:8px}
+.alert-body p{font-size:15px;font-weight:500;color:var(--muted);line-height:1.45}
+.alert-actions{display:flex;border-top:1px solid var(--line)}
+.alert-actions button{flex:1;font-family:var(--sans);font-size:17px;padding:17px 8px;
+  border:none;background:none;cursor:pointer;min-height:58px}
+.alert-actions button:first-child{border-right:1px solid var(--line);
+  font-weight:700;color:var(--accent)}
+.alert-actions button:last-child{color:var(--danger);font-weight:600}
+.alert-actions button:active{background:var(--card)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
-
-<div id="pager">
-  <!-- TODAY -->
-  <section class="page" id="page-today">
-    <div class="topbar">
-      <div class="titles">
-        <h1>Today</h1>
-        <div class="date" id="date-today"></div>
-      </div>
+<div class="app">
+  <div class="topbar">
+    <div class="tb-spacer"></div>
+    <div class="titles">
+      <h1>Çeşme</h1>
+      <div class="date" id="dateLine"></div>
     </div>
-    <div class="add-row" data-day="today"><span class="add-ph">+ New task</span></div>
-    <ul class="tasks" id="list-today"></ul>
-  </section>
+    <button class="tb-btn" id="clearBtn" aria-label="Tüm listeleri temizle">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+        <path d="M10 11v6M14 11v6"/>
+      </svg>
+    </button>
+  </div>
 
-  <!-- TOMORROW -->
-  <section class="page" id="page-tomorrow">
-    <div class="topbar">
-      <div class="titles">
-        <h1>Tomorrow</h1>
-        <div class="date" id="date-tomorrow"></div>
-      </div>
+  <div class="segments" role="tablist" aria-label="Listeler">
+    <button class="segment" role="tab" id="tab-buy" aria-selected="true" aria-controls="panel">
+      Alınacaklar <span class="count" id="count-buy">0</span>
+    </button>
+    <button class="segment" role="tab" id="tab-bring" aria-selected="false" aria-controls="panel">
+      Götürülecekler <span class="count" id="count-bring">0</span>
+    </button>
+  </div>
+
+  <p class="hint" id="hint"></p>
+
+  <div id="panel" role="tabpanel" aria-live="polite">
+    <div class="add-row" id="addRow" role="button" tabindex="0" aria-label="Yeni madde ekle">
+      <span class="add-ph">＋ Yeni madde</span>
     </div>
-    <div class="add-row" data-day="tomorrow"><span class="add-ph">+ New task</span></div>
-    <ul class="tasks" id="list-tomorrow"></ul>
-  </section>
+    <ul class="tasks" id="list"></ul>
+    <div class="empty" id="empty" hidden>
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+        <circle cx="36" cy="26" r="14" fill="#F4B942" opacity="0.85"/>
+        <path d="M8 52c5-4 10-4 15 0s10 4 15 0 10-4 15 0 8 3 11 0" stroke="#00838F" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M8 62c5-4 10-4 15 0s10 4 15 0 10-4 15 0 8 3 11 0" stroke="#00838F" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.45"/>
+      </svg>
+      <p id="emptyText"></p>
+    </div>
+  </div>
 </div>
 
-<button class="fab" id="fab-day" aria-label="Add task"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none"/></svg></button>
-<button class="fab fab-left" id="fab-bl-open" aria-label="Open Later list"><svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12" fill="none"/><circle cx="4" cy="6" r="1.4" fill="#fff"/><circle cx="4" cy="12" r="1.4" fill="#fff"/><circle cx="4" cy="18" r="1.4" fill="#fff"/></svg></button>
+<div class="toast" id="toast" role="status"></div>
 
-<!-- BACKLOG -->
-<div id="bl-scrim"></div>
-<section id="backlog">
-  <div class="bl-head">
-    <div class="grabber"></div>
-    <div class="topbar">
-      <div class="titles">
-        <h1>Later</h1>
-      </div>
+<div class="overlay" id="overlay" role="alertdialog" aria-modal="true" aria-labelledby="alertTitle" aria-describedby="alertDesc">
+  <div class="alert">
+    <div class="alert-body">
+      <h2 id="alertTitle">Her şey silinsin mi?</h2>
+      <p id="alertDesc">İki listedeki bütün maddeler silinecek. Bu işlem geri alınamaz.</p>
+    </div>
+    <div class="alert-actions">
+      <button id="cancelClear">Vazgeç</button>
+      <button id="confirmClear">Hepsini Sil</button>
     </div>
   </div>
-  <div class="bl-scroll">
-    <div class="add-row" data-day="backlog"><span class="add-ph">+ New task</span></div>
-    <ul class="tasks" id="list-backlog"></ul>
-  </div>
-  <div id="bl-addbar"><button id="bl-addbtn"></button></div>
-</section>
+</div>
 
 <script>
-/* ============================== state ============================== */
-const KEY = 'today-tomorrow-v1';
-const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+(function () {
+  var STORAGE_KEY = 'yazlik-listesi-v1';
+  var state = { buy: [], bring: [], tab: 'buy' };
 
-function todayStr(d = new Date()) {
-  const p = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved && Array.isArray(saved.buy) && Array.isArray(saved.bring)) {
+      state.buy = saved.buy;
+      state.bring = saved.bring;
+    }
+  } catch (e) {}
 
-/*ROLLOVER-START*/
-function rollover(state, cur) {
-  if (!state.d) { state.d = cur; return state; }
-  if (state.d >= cur) return state;
-  // crossed-off tasks on BOTH days are cleared; unfinished ones roll into the new today
-  state.today = [...state.today.filter(t => !t.done), ...state.tomorrow.filter(t => !t.done)];
-  state.tomorrow = [];
-  state.d = cur;
-  return state;
-}
-/*ROLLOVER-END*/
+  var listEl = document.getElementById('list');
+  var emptyEl = document.getElementById('empty');
+  var emptyText = document.getElementById('emptyText');
+  var hintEl = document.getElementById('hint');
+  var addRow = document.getElementById('addRow');
+  var tabBuy = document.getElementById('tab-buy');
+  var tabBring = document.getElementById('tab-bring');
+  var toastEl = document.getElementById('toast');
+  var overlay = document.getElementById('overlay');
+  var toastTimer = null;
 
-let state;
-function load() {
-  try { state = JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { state = null; }
-  if (!state) state = { d: todayStr(), today: [], tomorrow: [], backlog: [] };
-  rollover(state, todayStr());
-  save();
-}
-function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+  document.getElementById('dateLine').textContent =
+    new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
 
-/* ============================== rendering ============================== */
-const fmt = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-let blOrigin = 'today';          // which day backlog was opened from
-let blSelected = new Set();
-let rowDragging = false;         // a row is being long-pressed / reordered
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ buy: state.buy, bring: state.bring })); } catch (e) {}
+  }
 
-const ARROW = `<svg viewBox="0 0 36 22"><path d="M4 11 H31 M23 4 L31 11 L23 18"/></svg>`;
-const LIST_ICON = `<svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.4"/><circle cx="4.5" cy="12" r="1.4"/><circle cx="4.5" cy="18" r="1.4"/></svg>`;
-const TRASH_ICON = `<svg viewBox="0 0 24 24"><path d="M4 7h16M9.5 11v6M14.5 11v6M6 7l1.2 13h9.6L18 7M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/></svg>`;
-const CHECK = `<svg viewBox="0 0 20 20"><path d="M4 10.5 L8.5 15 L16 5"/></svg>`;
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-function rowHTML(t, day) {
-  const isBL = day === 'backlog';
-  return `<li class="task ${t.done ? 'crossed' : ''} ${isBL && !t.perm ? 'temp' : ''} ${isBL && blSelected.has(t.id) ? 'selected' : ''}" data-id="${t.id}" data-day="${day}">
-    <div class="t-actions">
-      ${isBL ? '' : '<button class="a-backlog" aria-label="Move to Later">' + LIST_ICON + '</button>'}
-      <button class="a-delete" aria-label="Delete">${TRASH_ICON}</button>
-    </div>
-    <div class="t-content">
-      ${isBL ? `<span class="t-sel">${CHECK}</span>` : ''}
-      <span class="t-text"><span class="t-label">${escapeHTML(t.text)}</span></span>
-      ${isBL ? '' : `<button class="t-move ${day === 'tomorrow' ? 'mirror' : ''}">${ARROW}</button>`}
-    </div>
-  </li>`;
-}
-function escapeHTML(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
 
-function listFor(day) { return day === 'today' ? state.today : day === 'tomorrow' ? state.tomorrow : state.backlog; }
+  function checkSvg() {
+    return '<span class="ring"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+      '<path d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  }
 
-function render(day) {
-  const ul = document.getElementById('list-' + day);
-  ul.innerHTML = listFor(day).map(t => rowHTML(t, day)).join('');
-}
-function renderAll() { render('today'); render('tomorrow'); render('backlog'); renderDates(); updateAddbar(); }
-function renderDates() {
-  const now = new Date();
-  const tmr = new Date(now.getTime() + 86400000);
-  document.getElementById('date-today').textContent = fmt(now);
-  document.getElementById('date-tomorrow').textContent = fmt(tmr);
-}
+  function makeItem(item, listName) {
+    var li = document.createElement('li');
+    li.className = 'item' + (item.checked ? ' checked' : '');
+    li.dataset.id = item.id;
 
-/* ============================== pager (swipe between days) ============================== */
-const pager = document.getElementById('pager');
-let pageIndex = 0; // 0 = today, 1 = tomorrow
-function goTo(i, animate = true) {
-  pageIndex = Math.max(0, Math.min(1, i));
-  pager.style.transition = animate ? 'transform .3s cubic-bezier(.25,.8,.35,1)' : 'none';
-  pager.style.transform = `translateX(${-pageIndex * 100}vw)`;
-}
-goTo(0, false);
+    var check = document.createElement('button');
+    check.className = 'check';
+    check.innerHTML = checkSvg();
+    check.setAttribute('aria-label', (item.checked ? 'İşareti kaldır: ' : (listName === 'buy' ? 'Alındı olarak işaretle: ' : 'Tamamlandı olarak işaretle: ')) + item.text);
+    check.setAttribute('aria-pressed', item.checked ? 'true' : 'false');
+    check.addEventListener('click', function () { onCheck(listName, item.id, li); });
 
-let pDrag = null;
-pager.addEventListener('pointerdown', e => {
-  if (e.target.closest('button') || e.target.closest('input,textarea')) return;
-  pDrag = { x: e.clientX, y: e.clientY, active: false, id: e.pointerId };
-});
+    var label = document.createElement('span');
+    label.className = 'label';
+    var inner = document.createElement('span');
+    inner.className = 't-label';
+    inner.textContent = item.text;
+    label.appendChild(inner);
 
-/* On scrollable pages iOS grabs every gesture for vertical scrolling and
-   cancels our pointer events, so horizontal swipes die. Decide the gesture
-   direction ourselves: if it's horizontal-dominant, block native scrolling. */
-let tGuard = null;
-pager.addEventListener('touchstart', e => {
-  if (e.target.closest('input,textarea')) { tGuard = null; return; }
-  tGuard = { x: e.touches[0].clientX, y: e.touches[0].clientY, decided: false, horiz: false };
-}, { passive: true });
-pager.addEventListener('touchmove', e => {
-  if (!tGuard) return;
-  const dx = e.touches[0].clientX - tGuard.x, dy = e.touches[0].clientY - tGuard.y;
-  if (!tGuard.decided) {
-    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-      tGuard.decided = true;
-      tGuard.horiz = Math.abs(dx) > Math.abs(dy);
+    var del = document.createElement('button');
+    del.className = 'delete';
+    del.setAttribute('aria-label', 'Sil: ' + item.text);
+    del.innerHTML = '<svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>';
+    del.addEventListener('click', function () { onDelete(listName, item.id); });
+
+    li.appendChild(check);
+    li.appendChild(label);
+    li.appendChild(del);
+    return li;
+  }
+
+  function render() {
+    document.getElementById('count-buy').textContent = state.buy.length;
+    var bringOpen = state.bring.filter(function (i) { return !i.checked; }).length;
+    document.getElementById('count-bring').textContent = bringOpen;
+
+    tabBuy.setAttribute('aria-selected', state.tab === 'buy' ? 'true' : 'false');
+    tabBring.setAttribute('aria-selected', state.tab === 'bring' ? 'true' : 'false');
+
+    listEl.innerHTML = '';
+    var items = state[state.tab];
+
+    if (state.tab === 'buy') {
+      hintEl.textContent = 'Satın aldığınız maddeyi işaretleyin, Götürülecekler listesine geçsin.';
+      emptyText.textContent = 'Alınacaklar listesi boş.';
+      items.forEach(function (item) { listEl.appendChild(makeItem(item, 'buy')); });
+    } else {
+      hintEl.textContent = 'Arabaya koyduklarınızı işaretleyin, listenin altına insin.';
+      emptyText.textContent = 'Götürülecekler listesi boş.';
+      var open = items.filter(function (i) { return !i.checked; });
+      var done = items.filter(function (i) { return i.checked; });
+      open.forEach(function (item) { listEl.appendChild(makeItem(item, 'bring')); });
+      if (done.length) {
+        var head = document.createElement('li');
+        head.className = 'done-header';
+        head.textContent = 'Tamamlanan · ' + done.length;
+        listEl.appendChild(head);
+        done.forEach(function (item) { listEl.appendChild(makeItem(item, 'bring')); });
+      }
+    }
+
+    var isEmpty = items.length === 0;
+    listEl.hidden = isEmpty;
+    emptyEl.hidden = !isEmpty;
+  }
+
+  function onCheck(listName, id, li) {
+    if (listName === 'buy') {
+      var idx = state.buy.findIndex(function (i) { return i.id === id; });
+      if (idx === -1) return;
+      var item = state.buy[idx];
+      li.classList.add('leaving');
+      setTimeout(function () {
+        state.buy.splice(idx, 1);
+        state.bring.push({ id: item.id, text: item.text, checked: false });
+        save();
+        render();
+        toast('“' + item.text + '” Götürülecekler listesine geçti');
+      }, 650);
+    } else {
+      var it = state.bring.find(function (i) { return i.id === id; });
+      if (!it) return;
+      it.checked = !it.checked;
+      save();
+      render();
     }
   }
-  if (tGuard.decided && tGuard.horiz) e.preventDefault();
-}, { passive: false });
-pager.addEventListener('touchend', () => { tGuard = null; });
-pager.addEventListener('pointermove', e => {
-  if (!pDrag || e.pointerId !== pDrag.id) return;
-  const dx = e.clientX - pDrag.x, dy = e.clientY - pDrag.y;
-  if (!pDrag.active) {
-    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.3) pDrag.active = true;
-    else if (Math.abs(dy) > 14) { pDrag = null; return; }
-    else return;
-  }
-  e.preventDefault();
-  pager.style.transition = 'none';
-  const base = -pageIndex * window.innerWidth;
-  let off = base + dx;
-  off = Math.min(0, Math.max(-window.innerWidth, off));
-  pager.style.transform = `translateX(${off}px)`;
-});
-function pagerEnd(e) {
-  if (!pDrag) return;
-  if (pDrag.active) {
-    const dx = e.clientX - pDrag.x;
-    if (dx < -60) goTo(pageIndex + 1); else if (dx > 60) goTo(pageIndex - 1); else goTo(pageIndex);
-  }
-  pDrag = null;
-}
-pager.addEventListener('pointerup', pagerEnd);
-pager.addEventListener('pointercancel', () => { goTo(pageIndex); pDrag = null; });
 
-/* ============================== add rows ============================== */
-document.querySelectorAll('.add-row').forEach(row => {
-  row.addEventListener('click', () => {
-    if (row.querySelector('input')) return;
-    const day = row.dataset.day;
-    row.innerHTML = `<input type="text" enterkeyhint="done" autocapitalize="sentences">`;
-    const inp = row.querySelector('input');
+  function onDelete(listName, id) {
+    state[listName] = state[listName].filter(function (i) { return i.id !== id; });
+    save();
+    render();
+  }
+
+  /* inline add row: tap to type, Enter or blur to save */
+  function openAdd() {
+    if (addRow.querySelector('input')) return;
+    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde" placeholder="' +
+      (state.tab === 'buy' ? 'Örn: Zeytinyağı' : 'Örn: İlaçlar') + '">';
+    var inp = addRow.querySelector('input');
     inp.focus();
-    const commit = () => {
-      const v = inp.value.trim();
+    var commit = function () {
+      var v = inp.value.trim();
       if (v) {
-        const t = { id: uid(), text: v, done: false };
-        if (day === 'backlog') { t.perm = true; delete t.done; }
-        listFor(day).unshift(t);
-        save(); render(day);
+        state[state.tab].push({ id: uid(), text: v, checked: false });
+        save();
+        render();
       }
-      row.innerHTML = `<span class="add-ph">+ New task</span>`;
-      row.classList.remove('active');
+      addRow.innerHTML = '<span class="add-ph">＋ Yeni madde</span>';
     };
-    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); });
+    inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') inp.blur(); });
     inp.addEventListener('blur', commit);
-  });
-});
-
-/* floating + buttons */
-function openAdd(day) {
-  const row = document.querySelector(`.add-row[data-day="${day}"]`);
-  if (day === 'backlog') document.querySelector('#backlog .bl-scroll').scrollTop = 0;
-  else document.getElementById('page-' + day).scrollTop = 0;
-  row.classList.add('active');
-  row.click();
-}
-document.getElementById('fab-day').addEventListener('click', () => openAdd(pageIndex ? 'tomorrow' : 'today'));
-
-/* ============================== backlog sheet open/close ============================== */
-const backlogEl = document.getElementById('backlog');
-const scrimEl = document.getElementById('bl-scrim');
-document.getElementById('fab-bl-open').addEventListener('click', () => {
-  blOrigin = pageIndex ? 'tomorrow' : 'today';
-  blSelected.clear();
-  render('backlog'); updateAddbar();
-  backlogEl.classList.add('open');
-  scrimEl.classList.add('show');
-});
-function closeBacklog() {
-  backlogEl.classList.remove('open');
-  scrimEl.classList.remove('show');
-  blSelected.clear(); updateAddbar();
-}
-scrimEl.addEventListener('click', closeBacklog);
-
-/* drag the sheet down anywhere to dismiss (list must be scrolled to top) */
-(() => {
-  const scroller = document.querySelector('#backlog .bl-scroll');
-  let sd = null;
-  backlogEl.addEventListener('pointerdown', e => {
-    if (e.target.closest('input,textarea')) return;
-    sd = { x: e.clientX, y: e.clientY, t: Date.now(), dy: 0, pid: e.pointerId,
-           active: !!e.target.closest('.bl-head') && !e.target.closest('button') };
-    if (sd.active) backlogEl.style.transition = 'none';
-  });
-  backlogEl.addEventListener('pointermove', e => {
-    if (!sd || e.pointerId !== sd.pid) return;
-    if (rowDragging) { sd = null; return; }
-    if (!sd.active) {
-      const dy = e.clientY - sd.y, dx = e.clientX - sd.x;
-      if (dy > 10 && dy > Math.abs(dx) * 1.2 && scroller.scrollTop <= 0) {
-        sd.active = true; sd.y = e.clientY; sd.t = Date.now();
-        backlogEl.style.transition = 'none';
-      } else if (dy < -10 || Math.abs(dx) > 12) { sd = null; return; }
-      else return;
-    }
-    sd.dy = Math.max(0, e.clientY - sd.y);
-    backlogEl.style.transform = `translateY(${sd.dy}px)`;
-  });
-  const end = () => {
-    if (!sd) return;
-    backlogEl.style.transition = '';
-    backlogEl.style.transform = '';
-    if (sd.active) {
-      const vel = sd.dy / Math.max(1, Date.now() - sd.t); // px per ms
-      if (sd.dy > 140 || vel > 0.5) closeBacklog();
-    }
-    sd = null;
-  };
-  backlogEl.addEventListener('pointerup', end);
-  backlogEl.addEventListener('pointercancel', end);
-})();
-function updateAddbar() {
-  const bar = document.getElementById('bl-addbar');
-  const n = blSelected.size;
-  if (n > 0) {
-    document.getElementById('bl-addbtn').textContent = `Add ${n} to ${blOrigin}`;
-    bar.classList.add('show');
-  } else bar.classList.remove('show');
-}
-document.getElementById('bl-addbtn').addEventListener('click', () => {
-  const ids = [...blSelected];
-  const picked = state.backlog.filter(t => blSelected.has(t.id));
-  // add copies to the origin day, at the top, preserving backlog order
-  const copies = picked.map(t => ({ id: uid(), text: t.text, done: false }));
-  listFor(blOrigin).unshift(...copies);
-  // non-permanent items leave the backlog when used
-  state.backlog = state.backlog.filter(t => !(blSelected.has(t.id) && !t.perm));
-  save(); renderAll();
-  closeBacklog();
-  goTo(blOrigin === 'today' ? 0 : 1, false);
-});
-
-/* ============================== task row gestures ============================== */
-let openActions = null;                  // li with actions revealed
-function closeActions() {
-  if (openActions) {
-    const a = openActions.querySelector('.t-actions');
-    if (a) a.style.transform = '';
-    const c = openActions.querySelector('.t-content');
-    if (c) c.style.transform = '';
-    openActions = null;
   }
-}
-document.addEventListener('pointerdown', e => {
-  if (openActions && !e.target.closest('.t-actions') && !openActions.contains(e.target)) closeActions();
-}, true);
-
-const LONG_MS = 420, ACT_W = () => { return 82 * (1 /*delete*/) + 82; }; // recomputed per row below
-
-document.querySelectorAll('ul.tasks').forEach(ul => {
-  let g = null;      // gesture info
-  let drag = null;   // reorder drag info
-
-  ul.addEventListener('pointerdown', e => {
-    const li = e.target.closest('li.task');
-    if (!li || e.target.closest('.t-actions')) return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    const day = li.dataset.day;
-    const onButton = !!e.target.closest('.t-move');
-    g = {
-      li, day, id: li.dataset.id, x: e.clientX, y: e.clientY, t: Date.now(),
-      mode: 'tap', onButton, pid: e.pointerId,
-      open: openActions === li,
-      dir: day === 'today' ? 1 : -1   // direction that reveals actions
-    };
-    if (!onButton) {
-      g.timer = setTimeout(() => {
-        if (g && g.mode === 'tap') {
-          g.mode = 'press';           // release = rename, move = reorder
-          rowDragging = true;
-          pDrag = null;
-          navigator.vibrate && navigator.vibrate(8);
-          g.li.classList.add('pressed');
-        }
-      }, LONG_MS);
-    }
+  addRow.addEventListener('click', openAdd);
+  addRow.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAdd(); }
   });
 
-  // block native scrolling while a row is lifted / being reordered
-  ul.addEventListener('touchmove', e => {
-    if (g && (g.mode === 'press' || g.mode === 'drag')) e.preventDefault();
-  }, { passive: false });
+  tabBuy.addEventListener('click', function () { state.tab = 'buy'; render(); });
+  tabBring.addEventListener('click', function () { state.tab = 'bring'; render(); });
 
-  ul.addEventListener('pointermove', e => {
-    if (!g || e.pointerId !== g.pid) return;
-    const dx = e.clientX - g.x, dy = e.clientY - g.y;
-    if (g.mode === 'press') {
-      if (Math.abs(dy) > 6) startDrag(g, e);
-      else return;
-    }
-    if (g.mode === 'tap') {
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2 && !g.onButton) {
-        clearTimeout(g.timer);
-        const opening = dx * g.dir > 0;
-        if (g.open || opening) {
-          g.mode = 'swipe';
-          pDrag = null;   // this gesture belongs to the row, not the pager
-          g.li.setPointerCapture && g.li.setPointerCapture(e.pointerId);
-        } else { g = null; return; }   // paging direction: let the pager take it
-      } else if (Math.abs(dy) > 12) { clearTimeout(g.timer); g = null; return; }
-    }
-    if (g.mode === 'swipe') {
-      e.preventDefault();
-      const act = g.li.querySelector('.t-actions');
-      const w = act.getBoundingClientRect().width || 164;
-      const d = dx * g.dir;
-      const p = Math.max(0, Math.min(1, (g.open ? 1 : 0) + d / w));
-      act.style.transition = 'none';
-      act.style.transform = `translateX(${(g.dir > 0 ? -1 : 1) * (1 - p) * 110}%)`;
-      if (g.dir > 0) { // today: text slides right along with the strip
-        const c = g.li.querySelector('.t-content');
-        c.style.transition = 'none';
-        c.style.transform = `translateX(${p * w}px)`;
-      }
-      g.actW = w;
-    }
-    if (g.mode === 'drag') moveDrag(g, e);
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    overlay.classList.add('show');
+    document.getElementById('cancelClear').focus();
+  });
+  document.getElementById('cancelClear').addEventListener('click', function () {
+    overlay.classList.remove('show');
+  });
+  document.getElementById('confirmClear').addEventListener('click', function () {
+    state.buy = [];
+    state.bring = [];
+    save();
+    render();
+    overlay.classList.remove('show');
+    toast('Listeler temizlendi');
+  });
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) overlay.classList.remove('show');
   });
 
-  function endGesture(e) {
-    if (!g || (e.pointerId !== undefined && e.pointerId !== g.pid)) return;
-    clearTimeout(g.timer);
-    g.li.classList.remove('pressed');
-    rowDragging = false;
-    if (g.mode === 'tap') {
-      handleTap(g, e);
-    } else if (g.mode === 'press') {
-      // long-press released without moving → rename
-      const t = listFor(g.day).find(x => x.id === g.id);
-      if (t) startRename(g.li, t, g.day);
-    } else if (g.mode === 'swipe') {
-      const act = g.li.querySelector('.t-actions');
-      const cont = g.li.querySelector('.t-content');
-      const d = (e.clientX - g.x) * g.dir;
-      const w = g.actW || 164;
-      act.style.transition = '';
-      cont.style.transition = '';
-      const shouldOpen = g.open ? d > -w * 0.5 : d > w * 0.4;
-      if (shouldOpen) {
-        act.style.transform = 'translateX(0)';
-        if (g.dir > 0) cont.style.transform = `translateX(${w}px)`;
-        if (openActions && openActions !== g.li) closeActions();
-        openActions = g.li;
-      } else {
-        act.style.transform = ''; cont.style.transform = '';
-        if (openActions === g.li) openActions = null;
-      }
-    } else if (g.mode === 'drag') {
-      endDrag(g);
-    }
-    g = null;
-  }
-  ul.addEventListener('pointerup', endGesture);
-  ul.addEventListener('pointercancel', endGesture);
+  render();
 
-  /* ---------- long-press drag to reorder ---------- */
-  function startDrag(gg, e) {
-    closeActions();
-    gg.mode = 'drag';
-    rowDragging = true;
-    pDrag = null;
-    const li = gg.li;
-    li.classList.remove('pressed');
-    navigator.vibrate && navigator.vibrate(10);
-    const rows = [...ul.children];
-    gg.startIdx = rows.indexOf(li);
-    gg.curIdx = gg.startIdx;
-    gg.rowH = li.getBoundingClientRect().height;
-    gg.y = e.clientY;                 // rebase so the row doesn't jump
-    ul.classList.add('reordering');
-    li.classList.add('dragging');
-    const c = li.querySelector('.t-content');
-    c.style.transition = 'none';      // dragged row must follow the finger 1:1
-    rows.forEach(r => { if (r !== li) r.classList.add('shifting'); });
-    li.setPointerCapture && li.setPointerCapture(gg.pid);
-  }
-  function moveDrag(gg, e) {
-    e.preventDefault();
-    const dy = e.clientY - gg.y;
-    const li = gg.li;
-    li.querySelector('.t-content').style.transform = `translate3d(0,${dy}px,0)`;
-    const rows = [...ul.children];
-    let target = gg.startIdx + Math.round(dy / gg.rowH);
-    target = Math.max(0, Math.min(rows.length - 1, target));
-    if (target !== gg.curIdx) gg.curIdx = target;
-    rows.forEach((r, i) => {
-      if (r === li) return;
-      let shift = 0;
-      if (gg.curIdx < gg.startIdx && i >= gg.curIdx && i < gg.startIdx) shift = gg.rowH;
-      if (gg.curIdx > gg.startIdx && i > gg.startIdx && i <= gg.curIdx) shift = -gg.rowH;
-      const t = shift ? `translate3d(0,${shift}px,0)` : '';
-      const c = r.querySelector('.t-content');
-      if (c.style.transform !== t) c.style.transform = t;
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
     });
   }
-  function endDrag(gg) {
-    ul.classList.remove('reordering');
-    const list = listFor(gg.day);
-    const item = list.splice(gg.startIdx, 1)[0];
-    list.splice(gg.curIdx, 0, item);
-    save(); render(gg.day);
-  }
-});
-
-/* ---------- taps ---------- */
-function handleTap(g, e) {
-  const day = g.day, li = g.li;
-  const list = listFor(day);
-  const t = list.find(x => x.id === g.id);
-  if (!t) return;
-
-  if (openActions) { closeActions(); return; }
-
-  // action buttons in the revealed strip
-  if (e.target.closest('.a-delete')) return; // handled by click below
-
-  if (e.target.closest('.t-move')) {
-    // move to the other day
-    const from = day, to = day === 'today' ? 'tomorrow' : 'today';
-    listFor(from).splice(list.indexOf(t), 1);
-    listFor(to).unshift(t); // keeps its crossed-out state
-    save(); render(from); render(to);
-    return;
-  }
-
-  if (day === 'backlog') {
-    if (blSelected.has(t.id)) blSelected.delete(t.id); else blSelected.add(t.id);
-    li.classList.toggle('selected');
-    updateAddbar();
-    return;
-  }
-
-  // cross / uncross, then re-slot: crossed sink to the bottom,
-  // un-crossed land at the bottom of the active tasks
-  t.done = !t.done;
-  list.splice(list.indexOf(t), 1);
-  if (t.done) {
-    list.push(t);
-  } else {
-    const firstDone = list.findIndex(x => x.done);
-    if (firstDone === -1) list.push(t); else list.splice(firstDone, 0, t);
-  }
-  save(); render(day);
-}
-
-function startRename(li, t, day) {
-  const span = li.querySelector('.t-text');
-  span.innerHTML = `<textarea rows="1" enterkeyhint="done" autocapitalize="sentences"></textarea>`;
-  const inp = span.querySelector('textarea');
-  inp.value = t.text;
-  const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
-  inp.focus();
-  inp.setSelectionRange(inp.value.length, inp.value.length);
-  fit();
-  inp.addEventListener('input', fit);
-  inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
-  inp.addEventListener('blur', () => {
-    const v = inp.value.trim();
-    if (v) t.text = v;
-    save(); render(day);
-  });
-}
-
-/* ---------- action strip buttons (delete / to backlog) ---------- */
-document.addEventListener('click', e => {
-  const li = e.target.closest('li.task');
-  if (!li) return;
-  const day = li.dataset.day;
-  const list = listFor(day);
-  const idx = list.findIndex(x => x.id === li.dataset.id);
-  if (idx < 0) return;
-  if (e.target.closest('.a-delete')) {
-    openActions = null;
-    list.splice(idx, 1);
-    save(); render(day);
-    if (day === 'backlog') { blSelected.delete(li.dataset.id); updateAddbar(); }
-  } else if (e.target.closest('.a-backlog')) {
-    openActions = null;
-    const t = list.splice(idx, 1)[0];
-    state.backlog.unshift({ id: t.id, text: t.text, perm: false });
-    save(); render(day); render('backlog');
-  }
-});
-
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-/* iOS: snap the viewport back after the keyboard closes, so fixed buttons
-   return to the bottom instead of being left stranded */
-function resetViewport() {
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-}
-window.addEventListener('focusout', () => {
-  [60, 250, 600, 1000].forEach(t => setTimeout(resetViewport, t));
-});
-const typing = () => {
-  const a = document.activeElement;
-  return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA');
-};
-if (window.visualViewport) {
-  visualViewport.addEventListener('resize', () => { if (!typing()) resetViewport(); });
-  visualViewport.addEventListener('scroll', () => { if (!typing()) resetViewport(); });
-}
-
-/* ============================== midnight rollover ============================== */
-function checkRollover() {
-  const cur = todayStr();
-  if (state.d !== cur) { rollover(state, cur); save(); renderAll(); }
-  scheduleMidnight();
-}
-let midnightTimer = null;
-function scheduleMidnight() {
-  clearTimeout(midnightTimer);
-  const now = new Date();
-  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 2);
-  midnightTimer = setTimeout(checkRollover, next - now);
-}
-document.addEventListener('visibilitychange', () => { if (!document.hidden) checkRollover(); });
-
-/* ============================== boot ============================== */
-load();
-renderAll();
-scheduleMidnight();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+})();
 </script>
 </body>
 </html>
