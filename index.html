@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Çeşme</title>
+<meta name="description" content="Alınacaklar ve götürülecekler listesi">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Çeşme">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;
+  --ink:#1c1d31;
+  --muted:#9a9cb0;
+  --card:#f5f6f9;
+  --line:#eef0f4;
+  --accent:#00838F;
+  --accent-dark:#006972;
+  --danger:#ff5c69;
+  --sans:'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg)}
+body{
+  font-family:var(--sans);color:var(--ink);
+  min-height:100vh;min-height:100dvh;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+.app{max-width:560px;margin:0 auto;padding:12px 20px 120px}
+
+/* ---- top bar: centered title, action at edge ---- */
+.topbar{position:relative;display:flex;align-items:center;justify-content:space-between;
+  min-height:56px;margin-bottom:8px}
+.topbar .titles{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  text-align:center;pointer-events:none}
+.topbar h1{font-size:24px;font-weight:700;line-height:1.2;color:var(--ink)}
+.topbar .date{font-size:14px;font-weight:500;color:var(--muted);margin-top:1px}
+.tb-btn{position:relative;z-index:1;font-family:var(--sans);background:transparent;border:none;
+  color:var(--muted);min-width:48px;min-height:48px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:12px}
+.tb-btn:active{opacity:.6}
+.tb-spacer{min-width:48px}
+button:focus-visible,input:focus-visible,.add-row:focus-visible{
+  outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---- segmented tabs, flat ---- */
+.segments{display:flex;background:var(--card);border-radius:12px;padding:3px;gap:3px}
+.segment{flex:1;border:none;background:transparent;border-radius:9px;padding:12px 6px;
+  font-family:var(--sans);font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;min-height:52px;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease}
+.segment[aria-selected="true"]{background:var(--bg);color:var(--accent);
+  box-shadow:0 2px 8px rgba(28,29,49,.10)}
+.segment .count{background:var(--accent);color:#fff;font-size:13px;font-weight:700;
+  min-width:24px;height:24px;border-radius:12px;display:inline-flex;align-items:center;
+  justify-content:center;padding:0 7px}
+.segment[aria-selected="false"] .count{background:#b9bcd0}
+
+.hint{font-size:14px;font-weight:500;color:var(--muted);padding:12px 2px 4px;line-height:1.45}
+
+/* ---- inline add row ---- */
+.add-row{display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--line);
+  color:var(--muted);font-size:18px;font-weight:500;cursor:text}
+.add-row input{flex:1;border:none;outline:none;background:transparent;font-family:var(--sans);
+  font-size:18px;font-weight:500;color:var(--ink);padding:0;min-width:0}
+.add-row input::placeholder{color:var(--muted)}
+
+/* ---- task rows: flat, hairline separators ---- */
+ul.tasks{list-style:none}
+li.item{display:flex;align-items:center;gap:10px;min-height:56px;
+  border-bottom:1px solid var(--line);animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.check{flex-shrink:0;width:48px;height:48px;margin-left:-10px;border:none;background:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.check .ring{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9dbe6;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease,border-color .15s ease}
+li.item.checked .ring,li.item.leaving .ring{background:var(--accent);border-color:var(--accent)}
+.ring svg{opacity:0;transform:scale(.5);transition:opacity .15s ease,transform .15s ease}
+li.item.checked .ring svg,li.item.leaving .ring svg{opacity:1;transform:scale(1)}
+
+.label{flex:1;font-size:18px;font-weight:500;line-height:1.35;padding:14px 0;
+  min-width:0;overflow-wrap:anywhere}
+li.item.checked .label{color:var(--muted)}
+li.item.checked .label .t-label{text-decoration:line-through;
+  text-decoration-thickness:1.5px;text-decoration-color:var(--muted)}
+li.item.leaving{opacity:0;transform:translateX(30px);
+  transition:opacity .4s ease .25s,transform .4s ease .25s}
+
+.delete{flex-shrink:0;width:48px;height:48px;margin-right:-10px;border:none;background:none;
+  color:#b9bcd0;cursor:pointer;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.delete:active{color:var(--danger)}
+
+.done-header{font-size:14px;font-weight:600;color:var(--muted);
+  padding:20px 0 8px;border-bottom:1px solid var(--line);list-style:none}
+
+/* ---- empty state ---- */
+.empty{text-align:center;padding:56px 24px;color:var(--muted)}
+.empty svg{margin-bottom:16px}
+.empty p{font-size:16px;font-weight:500;line-height:1.5;white-space:pre-line}
+
+/* ---- toast: accent pill ---- */
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));
+  transform:translate(-50%,20px);background:var(--accent);color:#fff;
+  font-size:15px;font-weight:600;padding:15px 24px;border-radius:999px;
+  box-shadow:0 8px 24px rgba(0,131,143,.35);opacity:0;pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease;
+  max-width:calc(100vw - 40px);text-align:center;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---- confirm dialog ---- */
+.overlay{position:fixed;inset:0;background:rgba(28,29,49,.32);display:none;
+  align-items:center;justify-content:center;padding:24px;z-index:100}
+.overlay.show{display:flex}
+.alert{background:var(--bg);border-radius:22px;max-width:320px;width:100%;overflow:hidden;
+  box-shadow:0 12px 44px rgba(28,29,49,.22);animation:pop .2s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.alert-body{padding:26px 22px 20px;text-align:center}
+.alert-body h2{font-size:19px;font-weight:700;margin-bottom:8px}
+.alert-body p{font-size:15px;font-weight:500;color:var(--muted);line-height:1.45}
+.alert-actions{display:flex;border-top:1px solid var(--line)}
+.alert-actions button{flex:1;font-family:var(--sans);font-size:17px;padding:17px 8px;
+  border:none;background:none;cursor:pointer;min-height:58px}
+.alert-actions button:first-child{border-right:1px solid var(--line);
+  font-weight:700;color:var(--accent)}
+.alert-actions button:last-child{color:var(--danger);font-weight:600}
+.alert-actions button:active{background:var(--card)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="tb-spacer"></div>
+    <div class="titles">
+      <h1>Çeşme</h1>
+      <div class="date" id="dateLine"></div>
+    </div>
+    <button class="tb-btn" id="clearBtn" aria-label="Tüm listeleri temizle">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+        <path d="M10 11v6M14 11v6"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="segments" role="tablist" aria-label="Listeler">
+    <button class="segment" role="tab" id="tab-buy" aria-selected="true" aria-controls="panel">
+      Alınacaklar <span class="count" id="count-buy">0</span>
+    </button>
+    <button class="segment" role="tab" id="tab-bring" aria-selected="false" aria-controls="panel">
+      Götürülecekler <span class="count" id="count-bring">0</span>
+    </button>
+  </div>
+
+  <p class="hint" id="hint"></p>
+
+  <div id="panel" role="tabpanel" aria-live="polite">
+    <div class="add-row" id="addRow" role="button" tabindex="0" aria-label="Yeni madde ekle">
+      <span class="add-ph">＋ Yeni madde</span>
+    </div>
+    <ul class="tasks" id="list"></ul>
+    <div class="empty" id="empty" hidden>
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+        <circle cx="36" cy="26" r="14" fill="#F4B942" opacity="0.85"/>
+        <path d="M8 52c5-4 10-4 15 0s10 4 15 0 10-4 15 0 8 3 11 0" stroke="#00838F" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M8 62c5-4 10-4 15 0s10 4 15 0 10-4 15 0 8 3 11 0" stroke="#00838F" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.45"/>
+      </svg>
+      <p id="emptyText"></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<div class="overlay" id="overlay" role="alertdialog" aria-modal="true" aria-labelledby="alertTitle" aria-describedby="alertDesc">
+  <div class="alert">
+    <div class="alert-body">
+      <h2 id="alertTitle">Her şey silinsin mi?</h2>
+      <p id="alertDesc">İki listedeki bütün maddeler silinecek. Bu işlem geri alınamaz.</p>
+    </div>
+    <div class="alert-actions">
+      <button id="cancelClear">Vazgeç</button>
+      <button id="confirmClear">Hepsini Sil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'yazlik-listesi-v1';
+  var state = { buy: [], bring: [], tab: 'buy' };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved && Array.isArray(saved.buy) && Array.isArray(saved.bring)) {
+      state.buy = saved.buy;
+      state.bring = saved.bring;
+    }
+  } catch (e) {}
+
+  var listEl = document.getElementById('list');
+  var emptyEl = document.getElementById('empty');
+  var emptyText = document.getElementById('emptyText');
+  var hintEl = document.getElementById('hint');
+  var addRow = document.getElementById('addRow');
+  var tabBuy = document.getElementById('tab-buy');
+  var tabBring = document.getElementById('tab-bring');
+  var toastEl = document.getElementById('toast');
+  var overlay = document.getElementById('overlay');
+  var toastTimer = null;
+
+  document.getElementById('dateLine').textContent =
+    new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ buy: state.buy, bring: state.bring })); } catch (e) {}
+  }
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  function checkSvg() {
+    return '<span class="ring"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+      '<path d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  }
+
+  function makeItem(item, listName) {
+    var li = document.createElement('li');
+    li.className = 'item' + (item.checked ? ' checked' : '');
+    li.dataset.id = item.id;
+
+    var check = document.createElement('button');
+    check.className = 'check';
+    check.innerHTML = checkSvg();
+    check.setAttribute('aria-label', (item.checked ? 'İşareti kaldır: ' : (listName === 'buy' ? 'Alındı olarak işaretle: ' : 'Tamamlandı olarak işaretle: ')) + item.text);
+    check.setAttribute('aria-pressed', item.checked ? 'true' : 'false');
+    check.addEventListener('click', function () { onCheck(listName, item.id, li); });
+
+    var label = document.createElement('span');
+    label.className = 'label';
+    var inner = document.createElement('span');
+    inner.className = 't-label';
+    inner.textContent = item.text;
+    label.appendChild(inner);
+
+    var del = document.createElement('button');
+    del.className = 'delete';
+    del.setAttribute('aria-label', 'Sil: ' + item.text);
+    del.innerHTML = '<svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>';
+    del.addEventListener('click', function () { onDelete(listName, item.id); });
+
+    li.appendChild(check);
+    li.appendChild(label);
+    li.appendChild(del);
+    return li;
+  }
+
+  function render() {
+    document.getElementById('count-buy').textContent = state.buy.length;
+    var bringOpen = state.bring.filter(function (i) { return !i.checked; }).length;
+    document.getElementById('count-bring').textContent = bringOpen;
+
+    tabBuy.setAttribute('aria-selected', state.tab === 'buy' ? 'true' : 'false');
+    tabBring.setAttribute('aria-selected', state.tab === 'bring' ? 'true' : 'false');
+
+    listEl.innerHTML = '';
+    var items = state[state.tab];
+
+    if (state.tab === 'buy') {
+      hintEl.textContent = 'Satın aldığınız maddeyi işaretleyin, Götürülecekler listesine geçsin.';
+      emptyText.textContent = 'Alınacaklar listesi boş.';
+      items.forEach(function (item) { listEl.appendChild(makeItem(item, 'buy')); });
+    } else {
+      hintEl.textContent = 'Arabaya koyduklarınızı işaretleyin, listenin altına insin.';
+      emptyText.textContent = 'Götürülecekler listesi boş.';
+      var open = items.filter(function (i) { return !i.checked; });
+      var done = items.filter(function (i) { return i.checked; });
+      open.forEach(function (item) { listEl.appendChild(makeItem(item, 'bring')); });
+      if (done.length) {
+        var head = document.createElement('li');
+        head.className = 'done-header';
+        head.textContent = 'Tamamlanan · ' + done.length;
+        listEl.appendChild(head);
+        done.forEach(function (item) { listEl.appendChild(makeItem(item, 'bring')); });
+      }
+    }
+
+    var isEmpty = items.length === 0;
+    listEl.hidden = isEmpty;
+    emptyEl.hidden = !isEmpty;
+  }
+
+  function onCheck(listName, id, li) {
+    if (listName === 'buy') {
+      var idx = state.buy.findIndex(function (i) { return i.id === id; });
+      if (idx === -1) return;
+      var item = state.buy[idx];
+      li.classList.add('leaving');
+      setTimeout(function () {
+        state.buy.splice(idx, 1);
+        state.bring.push({ id: item.id, text: item.text, checked: false });
+        save();
+        render();
+        toast('“' + item.text + '” Götürülecekler listesine geçti');
+      }, 650);
+    } else {
+      var it = state.bring.find(function (i) { return i.id === id; });
+      if (!it) return;
+      it.checked = !it.checked;
+      save();
+      render();
+    }
+  }
+
+  function onDelete(listName, id) {
+    state[listName] = state[listName].filter(function (i) { return i.id !== id; });
+    save();
+    render();
+  }
+
+  /* inline add row: tap to type, Enter or blur to save */
+  function openAdd() {
+    if (addRow.querySelector('input')) return;
+    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde" placeholder="' +
+      (state.tab === 'buy' ? 'Örn: Zeytinyağı' : 'Örn: İlaçlar') + '">';
+    var inp = addRow.querySelector('input');
+    inp.focus();
+    var commit = function () {
+      var v = inp.value.trim();
+      if (v) {
+        state[state.tab].push({ id: uid(), text: v, checked: false });
+        save();
+        render();
+      }
+      addRow.innerHTML = '<span class="add-ph">＋ Yeni madde</span>';
+    };
+    inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') inp.blur(); });
+    inp.addEventListener('blur', commit);
+  }
+  addRow.addEventListener('click', openAdd);
+  addRow.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAdd(); }
+  });
+
+  tabBuy.addEventListener('click', function () { state.tab = 'buy'; render(); });
+  tabBring.addEventListener('click', function () { state.tab = 'bring'; render(); });
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    overlay.classList.add('show');
+    document.getElementById('cancelClear').focus();
+  });
+  document.getElementById('cancelClear').addEventListener('click', function () {
+    overlay.classList.remove('show');
+  });
+  document.getElementById('confirmClear').addEventListener('click', function () {
+    state.buy = [];
+    state.bring = [];
+    save();
+    render();
+    overlay.classList.remove('show');
+    toast('Listeler temizlendi');
+  });
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+
+  render();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
