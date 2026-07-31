@@ -126,11 +126,8 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
   padding:22px 0 10px;border-bottom:1px solid var(--line);list-style:none}
 
 /* ---- empty state: line illustration, vertically centered ---- */
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:16px;min-height:52vh}
+.empty{display:flex;align-items:center;justify-content:center;min-height:52vh}
 .empty[hidden]{display:none}
-.empty p{font-size:17px;font-weight:600;color:var(--muted)}
-.empty p[hidden]{display:none}
 
 /* ---- toast: flat, full content width ---- */
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));
@@ -263,7 +260,6 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
         <path d="M10 58c6-6 12-6 18 0s12 6 18 0 12-6 18 0 12 6 18 0 12-6 18 0" opacity=".9"/>
         <path d="M10 70c6-6 12-6 18 0s12 6 18 0 12-6 18 0 12 6 18 0 12-6 18 0" opacity=".4"/>
       </svg>
-      <p id="emptyText" hidden></p>
     </div>
   </div>
 </div>
@@ -330,7 +326,6 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
 
   var listEl = document.getElementById('list');
   var emptyEl = document.getElementById('empty');
-  var emptyText = document.getElementById('emptyText');
   var addRow = document.getElementById('addRow');
   var panel = document.getElementById('panel');
   var tabBuy = document.getElementById('tab-buy');
@@ -443,12 +438,6 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
     var isEmpty = items.length === 0;
     listEl.hidden = isEmpty;
     emptyEl.hidden = !isEmpty;
-    if (state.tab === 'buy') {
-      emptyText.textContent = 'Her şey alınmış!';
-      emptyText.hidden = false;
-    } else {
-      emptyText.hidden = true;
-    }
   }
 
   function switchTab(tab, direction) {
