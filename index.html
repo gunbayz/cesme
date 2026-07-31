@@ -41,13 +41,12 @@ body{
 }
 .app{max-width:560px;margin:0 auto;padding:12px 20px 120px}
 
-/* ---- top bar: centered title, action at edge ---- */
+/* ---- top bar ---- */
 .topbar{position:relative;display:flex;align-items:center;justify-content:space-between;
   min-height:56px;margin-bottom:8px}
 .topbar .titles{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
   text-align:center;pointer-events:none}
-.topbar h1{font-size:24px;font-weight:700;line-height:1.2;color:var(--ink)}
-.topbar .date{font-size:14px;font-weight:500;color:var(--muted);margin-top:1px}
+.topbar h1{font-size:27px;font-weight:700;line-height:1.2;color:var(--ink)}
 .tb-btn{position:relative;z-index:1;font-family:var(--sans);background:transparent;border:none;
   color:var(--muted);min-width:48px;min-height:48px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;border-radius:12px}
@@ -56,68 +55,65 @@ body{
 button:focus-visible,input:focus-visible,.add-row:focus-visible{
   outline:3px solid var(--accent);outline-offset:2px}
 
-/* ---- segmented tabs, flat ---- */
-.segments{display:flex;background:var(--card);border-radius:12px;padding:3px;gap:3px}
-.segment{flex:1;border:none;background:transparent;border-radius:9px;padding:12px 6px;
-  font-family:var(--sans);font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:7px;min-height:52px;
+/* ---- segmented tabs ---- */
+.segments{display:flex;background:var(--card);border-radius:14px;padding:4px;gap:4px}
+.segment{flex:1;border:none;background:transparent;border-radius:11px;padding:14px 6px;
+  font-family:var(--sans);font-size:18px;font-weight:600;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;
   transition:background .15s ease,color .15s ease,box-shadow .15s ease}
 .segment[aria-selected="true"]{background:var(--bg);color:var(--accent);
   box-shadow:0 2px 8px rgba(28,29,49,.10)}
-.segment .count{background:var(--accent);color:#fff;font-size:13px;font-weight:700;
-  min-width:24px;height:24px;border-radius:12px;display:inline-flex;align-items:center;
-  justify-content:center;padding:0 7px}
-.segment[aria-selected="false"] .count{background:#b9bcd0}
-
-.hint{font-size:14px;font-weight:500;color:var(--muted);padding:12px 2px 4px;line-height:1.45}
 
 /* ---- inline add row ---- */
-.add-row{display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--line);
-  color:var(--muted);font-size:18px;font-weight:500;cursor:text}
+.add-row{display:flex;align-items:center;min-height:62px;border-bottom:1px solid var(--line);
+  color:var(--muted);font-size:21px;font-weight:500;cursor:text;margin-top:10px}
 .add-row input{flex:1;border:none;outline:none;background:transparent;font-family:var(--sans);
-  font-size:18px;font-weight:500;color:var(--ink);padding:0;min-width:0}
+  font-size:21px;font-weight:500;color:var(--ink);padding:0;min-width:0}
 .add-row input::placeholder{color:var(--muted)}
 
-/* ---- task rows: flat, hairline separators ---- */
+/* ---- task rows ---- */
 ul.tasks{list-style:none}
-li.item{display:flex;align-items:center;gap:10px;min-height:56px;
-  border-bottom:1px solid var(--line);animation:fadeIn .25s ease}
+li.item{display:flex;align-items:center;gap:10px;min-height:64px;
+  border-bottom:1px solid var(--line);animation:fadeIn .25s ease;cursor:pointer}
+li.item:active{background:var(--card)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .check{flex-shrink:0;width:48px;height:48px;margin-left:-10px;border:none;background:none;
   cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%}
-.check .ring{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9dbe6;
+.check .ring{width:31px;height:31px;border-radius:50%;border:1.5px solid #d9dbe6;
   background:#fff;display:flex;align-items:center;justify-content:center;
   transition:background .15s ease,border-color .15s ease}
 li.item.checked .ring,li.item.leaving .ring{background:var(--accent);border-color:var(--accent)}
 .ring svg{opacity:0;transform:scale(.5);transition:opacity .15s ease,transform .15s ease}
 li.item.checked .ring svg,li.item.leaving .ring svg{opacity:1;transform:scale(1)}
 
-.label{flex:1;font-size:18px;font-weight:500;line-height:1.35;padding:14px 0;
+.label{flex:1;font-size:21px;font-weight:500;line-height:1.35;padding:16px 0;
   min-width:0;overflow-wrap:anywhere}
+.label input{width:100%;border:none;outline:none;background:transparent;
+  font-family:var(--sans);font-size:21px;font-weight:500;color:var(--ink)}
 li.item.checked .label{color:var(--muted)}
 li.item.checked .label .t-label{text-decoration:line-through;
   text-decoration-thickness:1.5px;text-decoration-color:var(--muted)}
 li.item.leaving{opacity:0;transform:translateX(30px);
   transition:opacity .4s ease .25s,transform .4s ease .25s}
 
-.delete{flex-shrink:0;width:48px;height:48px;margin-right:-10px;border:none;background:none;
+.more{flex-shrink:0;width:48px;height:48px;margin-right:-10px;border:none;background:none;
   color:#b9bcd0;cursor:pointer;border-radius:50%;
   display:flex;align-items:center;justify-content:center}
-.delete:active{color:var(--danger)}
+.more:active{color:var(--accent)}
 
-.done-header{font-size:14px;font-weight:600;color:var(--muted);
-  padding:20px 0 8px;border-bottom:1px solid var(--line);list-style:none}
+.done-header{font-size:16px;font-weight:600;color:var(--muted);
+  padding:22px 0 10px;border-bottom:1px solid var(--line);list-style:none}
 
 /* ---- empty state ---- */
 .empty{text-align:center;padding:56px 24px;color:var(--muted)}
 .empty svg{margin-bottom:16px}
-.empty p{font-size:16px;font-weight:500;line-height:1.5;white-space:pre-line}
+.empty p{font-size:19px;font-weight:500;line-height:1.5;white-space:pre-line}
 
-/* ---- toast: accent pill ---- */
+/* ---- toast ---- */
 .toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));
   transform:translate(-50%,20px);background:var(--accent);color:#fff;
-  font-size:15px;font-weight:600;padding:15px 24px;border-radius:999px;
+  font-size:17px;font-weight:600;padding:16px 26px;border-radius:999px;
   box-shadow:0 8px 24px rgba(0,131,143,.35);opacity:0;pointer-events:none;
   transition:opacity .25s ease,transform .25s ease;
   max-width:calc(100vw - 40px);text-align:center;z-index:50}
@@ -127,19 +123,45 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 .overlay{position:fixed;inset:0;background:rgba(28,29,49,.32);display:none;
   align-items:center;justify-content:center;padding:24px;z-index:100}
 .overlay.show{display:flex}
-.alert{background:var(--bg);border-radius:22px;max-width:320px;width:100%;overflow:hidden;
+.alert{background:var(--bg);border-radius:22px;max-width:340px;width:100%;overflow:hidden;
   box-shadow:0 12px 44px rgba(28,29,49,.22);animation:pop .2s ease}
 @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 .alert-body{padding:26px 22px 20px;text-align:center}
-.alert-body h2{font-size:19px;font-weight:700;margin-bottom:8px}
-.alert-body p{font-size:15px;font-weight:500;color:var(--muted);line-height:1.45}
+.alert-body h2{font-size:21px;font-weight:700;margin-bottom:8px}
+.alert-body p{font-size:17px;font-weight:500;color:var(--muted);line-height:1.45}
 .alert-actions{display:flex;border-top:1px solid var(--line)}
-.alert-actions button{flex:1;font-family:var(--sans);font-size:17px;padding:17px 8px;
-  border:none;background:none;cursor:pointer;min-height:58px}
+.alert-actions button{flex:1;font-family:var(--sans);font-size:19px;padding:18px 8px;
+  border:none;background:none;cursor:pointer;min-height:60px}
 .alert-actions button:first-child{border-right:1px solid var(--line);
   font-weight:700;color:var(--accent)}
 .alert-actions button:last-child{color:var(--danger);font-weight:600}
 .alert-actions button:active{background:var(--card)}
+
+/* ---- item action sheet (iOS style) ---- */
+.sheet-scrim{position:fixed;inset:0;background:rgba(28,29,49,.32);z-index:90;
+  opacity:0;pointer-events:none;transition:opacity .25s ease}
+.sheet-scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:95;
+  padding:0 12px calc(12px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .3s cubic-bezier(.32,.72,.28,1);
+  max-width:560px;margin:0 auto}
+.sheet.show{transform:translateY(0)}
+.sheet-group{background:var(--bg);border-radius:18px;overflow:hidden;
+  box-shadow:0 -6px 30px rgba(28,29,49,.16)}
+.sheet-name{font-size:16px;font-weight:600;color:var(--muted);text-align:center;
+  padding:16px 20px 14px;border-bottom:1px solid var(--line);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-group button{display:block;width:100%;font-family:var(--sans);font-size:20px;
+  font-weight:500;color:var(--ink);background:none;border:none;cursor:pointer;
+  min-height:62px;border-bottom:1px solid var(--line)}
+.sheet-group button:last-child{border-bottom:none}
+.sheet-group button:active{background:var(--card)}
+.sheet-group button.danger{color:var(--danger)}
+.sheet-cancel{margin-top:10px}
+.sheet-cancel button{display:block;width:100%;font-family:var(--sans);font-size:20px;
+  font-weight:700;color:var(--accent);background:var(--bg);border:none;cursor:pointer;
+  min-height:62px;border-radius:18px;box-shadow:0 2px 14px rgba(28,29,49,.12)}
+.sheet-cancel button:active{background:var(--card)}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -152,10 +174,9 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     <div class="tb-spacer"></div>
     <div class="titles">
       <h1>Çeşme</h1>
-      <div class="date" id="dateLine"></div>
     </div>
     <button class="tb-btn" id="clearBtn" aria-label="Tüm listeleri temizle">
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
         <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
         <path d="M10 11v6M14 11v6"/>
       </svg>
@@ -164,14 +185,12 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 
   <div class="segments" role="tablist" aria-label="Listeler">
     <button class="segment" role="tab" id="tab-buy" aria-selected="true" aria-controls="panel">
-      Alınacaklar <span class="count" id="count-buy">0</span>
+      🛍️ Alınacaklar
     </button>
     <button class="segment" role="tab" id="tab-bring" aria-selected="false" aria-controls="panel">
-      Götürülecekler <span class="count" id="count-bring">0</span>
+      🚗 Götürülecekler
     </button>
   </div>
-
-  <p class="hint" id="hint"></p>
 
   <div id="panel" role="tabpanel" aria-live="polite">
     <div class="add-row" id="addRow" role="button" tabindex="0" aria-label="Yeni madde ekle">
@@ -204,6 +223,17 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   </div>
 </div>
 
+<div class="sheet-scrim" id="sheetScrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Madde işlemleri">
+  <div class="sheet-group">
+    <div class="sheet-name" id="sheetName"></div>
+    <button id="actEdit">Düzenle</button>
+    <button id="actMove"></button>
+    <button id="actDelete" class="danger">Sil</button>
+  </div>
+  <div class="sheet-cancel"><button id="actCancel">Vazgeç</button></div>
+</div>
+
 <script>
 (function () {
   var STORAGE_KEY = 'yazlik-listesi-v1';
@@ -220,16 +250,15 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   var listEl = document.getElementById('list');
   var emptyEl = document.getElementById('empty');
   var emptyText = document.getElementById('emptyText');
-  var hintEl = document.getElementById('hint');
   var addRow = document.getElementById('addRow');
   var tabBuy = document.getElementById('tab-buy');
   var tabBring = document.getElementById('tab-bring');
   var toastEl = document.getElementById('toast');
   var overlay = document.getElementById('overlay');
+  var sheet = document.getElementById('sheet');
+  var sheetScrim = document.getElementById('sheetScrim');
   var toastTimer = null;
-
-  document.getElementById('dateLine').textContent =
-    new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+  var sheetItem = null; // { listName, id }
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ buy: state.buy, bring: state.bring })); } catch (e) {}
@@ -245,7 +274,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   }
 
   function checkSvg() {
-    return '<span class="ring"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+    return '<span class="ring"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
       '<path d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
   }
 
@@ -254,12 +283,10 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     li.className = 'item' + (item.checked ? ' checked' : '');
     li.dataset.id = item.id;
 
-    var check = document.createElement('button');
+    var check = document.createElement('span');
     check.className = 'check';
+    check.setAttribute('aria-hidden', 'true');
     check.innerHTML = checkSvg();
-    check.setAttribute('aria-label', (item.checked ? 'İşareti kaldır: ' : (listName === 'buy' ? 'Alındı olarak işaretle: ' : 'Tamamlandı olarak işaretle: ')) + item.text);
-    check.setAttribute('aria-pressed', item.checked ? 'true' : 'false');
-    check.addEventListener('click', function () { onCheck(listName, item.id, li); });
 
     var label = document.createElement('span');
     label.className = 'label';
@@ -268,23 +295,38 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     inner.textContent = item.text;
     label.appendChild(inner);
 
-    var del = document.createElement('button');
-    del.className = 'delete';
-    del.setAttribute('aria-label', 'Sil: ' + item.text);
-    del.innerHTML = '<svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>';
-    del.addEventListener('click', function () { onDelete(listName, item.id); });
+    var more = document.createElement('button');
+    more.className = 'more';
+    more.setAttribute('aria-label', 'Seçenekler: ' + item.text);
+    more.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/></svg>';
+    more.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openSheet(listName, item.id);
+    });
+
+    // whole row toggles
+    li.setAttribute('role', 'button');
+    li.setAttribute('tabindex', '0');
+    li.setAttribute('aria-pressed', item.checked ? 'true' : 'false');
+    li.setAttribute('aria-label', (item.checked ? 'İşareti kaldır: ' : 'İşaretle: ') + item.text);
+    li.addEventListener('click', function (e) {
+      if (e.target.closest('.more') || e.target.tagName === 'INPUT') return;
+      onCheck(listName, item.id, li);
+    });
+    li.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === li) {
+        e.preventDefault();
+        onCheck(listName, item.id, li);
+      }
+    });
 
     li.appendChild(check);
     li.appendChild(label);
-    li.appendChild(del);
+    li.appendChild(more);
     return li;
   }
 
   function render() {
-    document.getElementById('count-buy').textContent = state.buy.length;
-    var bringOpen = state.bring.filter(function (i) { return !i.checked; }).length;
-    document.getElementById('count-bring').textContent = bringOpen;
-
     tabBuy.setAttribute('aria-selected', state.tab === 'buy' ? 'true' : 'false');
     tabBring.setAttribute('aria-selected', state.tab === 'bring' ? 'true' : 'false');
 
@@ -292,11 +334,9 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     var items = state[state.tab];
 
     if (state.tab === 'buy') {
-      hintEl.textContent = 'Satın aldığınız maddeyi işaretleyin, Götürülecekler listesine geçsin.';
       emptyText.textContent = 'Alınacaklar listesi boş.';
       items.forEach(function (item) { listEl.appendChild(makeItem(item, 'buy')); });
     } else {
-      hintEl.textContent = 'Arabaya koyduklarınızı işaretleyin, listenin altına insin.';
       emptyText.textContent = 'Götürülecekler listesi boş.';
       var open = items.filter(function (i) { return !i.checked; });
       var done = items.filter(function (i) { return i.checked; });
@@ -304,7 +344,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
       if (done.length) {
         var head = document.createElement('li');
         head.className = 'done-header';
-        head.textContent = 'Tamamlanan · ' + done.length;
+        head.textContent = 'Tamamlanan';
         listEl.appendChild(head);
         done.forEach(function (item) { listEl.appendChild(makeItem(item, 'bring')); });
       }
@@ -337,13 +377,74 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     }
   }
 
-  function onDelete(listName, id) {
-    state[listName] = state[listName].filter(function (i) { return i.id !== id; });
+  /* ---- action sheet ---- */
+  function openSheet(listName, id) {
+    var item = state[listName].find(function (i) { return i.id === id; });
+    if (!item) return;
+    sheetItem = { listName: listName, id: id };
+    document.getElementById('sheetName').textContent = item.text;
+    document.getElementById('actMove').textContent =
+      listName === 'buy' ? '🚗 Götürülecekler listesine taşı' : '🛍️ Alınacaklar listesine taşı';
+    sheet.classList.add('show');
+    sheetScrim.classList.add('show');
+  }
+  function closeSheet() {
+    sheet.classList.remove('show');
+    sheetScrim.classList.remove('show');
+  }
+  sheetScrim.addEventListener('click', closeSheet);
+  document.getElementById('actCancel').addEventListener('click', closeSheet);
+
+  document.getElementById('actDelete').addEventListener('click', function () {
+    if (!sheetItem) return;
+    state[sheetItem.listName] = state[sheetItem.listName].filter(function (i) { return i.id !== sheetItem.id; });
     save();
     render();
-  }
+    closeSheet();
+  });
 
-  /* inline add row: tap to type, Enter or blur to save */
+  document.getElementById('actMove').addEventListener('click', function () {
+    if (!sheetItem) return;
+    var from = sheetItem.listName;
+    var to = from === 'buy' ? 'bring' : 'buy';
+    var idx = state[from].findIndex(function (i) { return i.id === sheetItem.id; });
+    if (idx === -1) return;
+    var item = state[from].splice(idx, 1)[0];
+    item.checked = false;
+    state[to].push(item);
+    save();
+    render();
+    closeSheet();
+    toast(to === 'bring' ? 'Götürülecekler listesine taşındı' : 'Alınacaklar listesine taşındı');
+  });
+
+  document.getElementById('actEdit').addEventListener('click', function () {
+    if (!sheetItem) return;
+    var info = sheetItem;
+    closeSheet();
+    var item = state[info.listName].find(function (i) { return i.id === info.id; });
+    if (!item) return;
+    // if the item is on the other tab, switch to it
+    if (state.tab !== info.listName) { state.tab = info.listName; render(); }
+    var li = listEl.querySelector('li[data-id="' + info.id + '"]');
+    if (!li) return;
+    var label = li.querySelector('.label');
+    label.innerHTML = '<input type="text" enterkeyhint="done" maxlength="120" aria-label="Maddeyi düzenle">';
+    var inp = label.querySelector('input');
+    inp.value = item.text;
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+    var commit = function () {
+      var v = inp.value.trim();
+      if (v) item.text = v;
+      save();
+      render();
+    };
+    inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') inp.blur(); });
+    inp.addEventListener('blur', commit);
+  });
+
+  /* ---- inline add row ---- */
   function openAdd() {
     if (addRow.querySelector('input')) return;
     addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde" placeholder="' +
