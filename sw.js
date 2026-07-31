@@ -1,4 +1,4 @@
-var CACHE = 'cesme-v10';
+var CACHE = 'cesme-v11';
 var ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.ico', './favicon.png'];
 
 self.addEventListener('install', function (e) {

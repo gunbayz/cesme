@@ -84,9 +84,11 @@ button:focus-visible,input:focus-visible,.add-row:focus-visible{
 /* ---- task rows ---- */
 ul.tasks{list-style:none}
 li.item{display:flex;align-items:center;gap:10px;min-height:64px;
-  border-bottom:1px solid var(--line);animation:fadeIn .25s ease;cursor:pointer}
+  border-bottom:1px solid var(--line);cursor:pointer}
 li.item:active{background:var(--card)}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* only freshly added rows fade in — re-renders stay still */
+li.item.enter{animation:fadeIn .28s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 .check{flex-shrink:0;width:48px;height:48px;margin-left:-10px;border:none;background:none;
   display:flex;align-items:center;justify-content:center}
@@ -104,8 +106,16 @@ li.item.checked .ring svg,li.item.leaving .ring svg{opacity:1;transform:scale(1)
 li.item.checked .label{color:var(--muted)}
 li.item.checked .label .t-label{text-decoration:line-through;
   text-decoration-thickness:1.5px;text-decoration-color:var(--muted)}
-li.item.leaving{opacity:0;transform:translateX(30px);
-  transition:opacity .4s ease .25s,transform .4s ease .25s}
+/* leaving: glide right, then collapse the row height so the list settles smoothly */
+li.item.leaving{overflow:hidden;
+  transition:opacity .34s cubic-bezier(.4,0,.2,1) .18s,
+             transform .34s cubic-bezier(.4,0,.2,1) .18s,
+             height .3s cubic-bezier(.4,0,.2,1) .34s,
+             min-height .3s cubic-bezier(.4,0,.2,1) .34s,
+             padding .3s cubic-bezier(.4,0,.2,1) .34s,
+             border-color .2s ease .34s}
+li.item.leaving.go{opacity:0;transform:translateX(26px);
+  height:0!important;min-height:0;padding-top:0;padding-bottom:0;border-color:transparent}
 
 .more{flex-shrink:0;width:48px;height:48px;margin-right:-10px;border:none;background:none;
   color:#b9bcd0;cursor:pointer;border-radius:50%;
@@ -129,8 +139,8 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   border:1.5px solid var(--accent-tint-border);
   font-size:18px;font-weight:600;
   padding:18px 22px;border-radius:18px;opacity:0;pointer-events:none;
-  transition:opacity .15s ease,transform .15s ease;text-align:center;z-index:50;
-  line-height:1.4}
+  transition:opacity .26s cubic-bezier(.4,0,.2,1),transform .26s cubic-bezier(.4,0,.2,1);
+  text-align:center;z-index:50;line-height:1.4}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* ---- confirm dialog: flat ---- */
@@ -332,6 +342,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   var celebrateEl = document.getElementById('celebrate');
   var toastTimer = null;
   var sheetItem = null;
+  var freshId = null; // only this row plays the entry animation
 
   var FISH = '<svg width="__S__" height="__S__" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12c2.8-4.4 6.6-6.6 10-5.2 2.5 1 4.4 3 5.8 5.2-1.4 2.2-3.3 4.2-5.8 5.2-3.4 1.4-7.2-.8-10-5.2z"/><path d="M18.3 12l3.2-3.6v7.2z"/><circle cx="7.6" cy="10.9" r=".6" fill="currentColor" stroke="none"/></svg>';
 
@@ -341,11 +352,17 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-  function toast(msg) {
+  function toast(msg, duration) {
     toastEl.textContent = msg;
     toastEl.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2400);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, duration || 2400);
+  }
+
+  /* Turkish-aware sentence case: first letter up, rest untouched */
+  function sentenceCase(s) {
+    if (!s) return s;
+    return s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
   }
 
   function checkSvg() {
@@ -355,7 +372,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
 
   function makeItem(item, listName) {
     var li = document.createElement('li');
-    li.className = 'item' + (item.checked ? ' checked' : '');
+    li.className = 'item' + (item.checked ? ' checked' : '') + (item.id === freshId ? ' enter' : '');
     li.dataset.id = item.id;
 
     var check = document.createElement('span');
@@ -422,6 +439,7 @@ li.item.leaving{opacity:0;transform:translateX(30px);
       }
     }
 
+    freshId = null;
     var isEmpty = items.length === 0;
     listEl.hidden = isEmpty;
     emptyEl.hidden = !isEmpty;
@@ -445,16 +463,23 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   function onCheck(listName, id, li) {
     if (listName === 'buy') {
       var idx = state.buy.findIndex(function (i) { return i.id === id; });
-      if (idx === -1) return;
+      if (idx === -1 || li.classList.contains('leaving')) return;
       var item = state.buy[idx];
+      // toast right away, gone shortly after the row finishes moving out
+      toast(item.text + ' götürülecekler listesine taşındı', 1900);
+      // lock in the current height so it can animate down to 0
+      li.style.height = li.getBoundingClientRect().height + 'px';
       li.classList.add('leaving');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { li.classList.add('go'); });
+      });
       setTimeout(function () {
-        state.buy.splice(idx, 1);
+        var i = state.buy.findIndex(function (x) { return x.id === id; });
+        if (i !== -1) state.buy.splice(i, 1);
         state.bring.push({ id: item.id, text: item.text, checked: false });
         save();
         render();
-        toast(item.text + ' götürülecekler listesine geçti');
-      }, 650);
+      }, 700);
     } else {
       var it = state.bring.find(function (i) { return i.id === id; });
       if (!it) return;
@@ -543,13 +568,13 @@ li.item.leaving{opacity:0;transform:translateX(30px);
     var li = listEl.querySelector('li[data-id="' + info.id + '"]');
     if (!li) return;
     var label = li.querySelector('.label');
-    label.innerHTML = '<input type="text" enterkeyhint="done" maxlength="120" aria-label="Maddeyi düzenle">';
+    label.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" autocorrect="on" spellcheck="false" maxlength="120" aria-label="Maddeyi düzenle">';
     var inp = label.querySelector('input');
     inp.value = item.text;
     inp.focus();
     inp.setSelectionRange(inp.value.length, inp.value.length);
     var commit = function () {
-      var v = inp.value.trim();
+      var v = sentenceCase(inp.value.trim());
       if (v) item.text = v;
       save();
       render();
@@ -561,13 +586,15 @@ li.item.leaving{opacity:0;transform:translateX(30px);
   /* ---- inline add row ---- */
   function openAdd() {
     if (addRow.querySelector('input')) return;
-    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" maxlength="120" aria-label="Yeni madde">';
+    addRow.innerHTML = '<input type="text" enterkeyhint="done" autocapitalize="sentences" autocorrect="on" spellcheck="false" maxlength="120" aria-label="Yeni madde">';
     var inp = addRow.querySelector('input');
     inp.focus();
     var commit = function () {
-      var v = inp.value.trim();
+      var v = sentenceCase(inp.value.trim());
       if (v) {
-        state[state.tab].push({ id: uid(), text: v, checked: false });
+        var nid = uid();
+        state[state.tab].push({ id: nid, text: v, checked: false });
+        freshId = nid;
         save();
         render();
       }
