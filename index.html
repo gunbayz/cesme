@@ -472,9 +472,44 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
     } else {
       var it = state.bring.find(function (i) { return i.id === id; });
       if (!it) return;
+      // FLIP: remember where every row sits, re-render, then glide them into place
+      var before = {};
+      Array.prototype.forEach.call(listEl.children, function (el) {
+        var key = el.dataset.id || 'done-header';
+        before[key] = el.getBoundingClientRect().top;
+      });
       it.checked = !it.checked;
       save();
       render();
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) return;
+      var movers = [];
+      Array.prototype.forEach.call(listEl.children, function (el) {
+        var key = el.dataset.id || 'done-header';
+        var old = before[key];
+        var now = el.getBoundingClientRect().top;
+        if (old === undefined) {
+          // the "Çantaya atıldı" header just appeared — fade it in
+          el.style.opacity = '0';
+          movers.push({ el: el, dy: 0, fade: true });
+        } else if (Math.abs(old - now) > 0.5) {
+          el.style.transform = 'translateY(' + (old - now) + 'px)';
+          movers.push({ el: el, dy: old - now, fade: false });
+        }
+      });
+      if (!movers.length) return;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          movers.forEach(function (m) {
+            m.el.style.transition = 'transform .42s cubic-bezier(.4,0,.2,1), opacity .42s ease';
+            m.el.style.transform = '';
+            m.el.style.opacity = '';
+          });
+          setTimeout(function () {
+            movers.forEach(function (m) { m.el.style.transition = ''; });
+          }, 460);
+        });
+      });
     }
   }
 
@@ -594,6 +629,8 @@ li.item.leaving.go{opacity:0;transform:translateX(26px);
   }
   addRow.addEventListener('click', openAdd);
   addRow.addEventListener('keydown', function (e) {
+    // only when the row itself is focused — never while typing in its input
+    if (e.target !== addRow) return;
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAdd(); }
   });
 
